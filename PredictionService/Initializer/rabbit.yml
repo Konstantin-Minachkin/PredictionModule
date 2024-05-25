@@ -1,0 +1,44 @@
+version: "3"
+services:
+  
+  tdm_rabbitmq:
+    image: rabbitmq:3.10.7-management
+    container_name: tdm_rabbitmq
+    hostname: tdm_rabbitmq
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=qweqwe
+      - RABBITMQ_DEFAULT_VHOST=prediction_service
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit disk_free_limit 1048576
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+
+# tdm_db:
+  #   image: postgres:14.8-bullseye
+  #   container_name: tdm_db_${ImageName}
+  #   command: postgres -c config_file=/etc/config/postgresql.conf -c hba_file=/etc/config/pg_hba.conf
+  #   environment:
+  #     POSTGRES_DB: "demo"
+  #     POSTGRES_USER: "tdm_user"
+  #     POSTGRES_PASSWORD: "ewq321"
+  #     # PGDATA: "/var/lib/postgresql/data/pgdata" -D ${PGDATA}
+  #     PGDATA: "/data/postgres"
+  #   volumes:
+  #     - ./db/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+  #     - ./db/data:/data/postgres
+  #     # - ./db/pg_hba.conf:/data/postgres/pg_hba.conf
+  #     # - ./db/postgresql.conf:/data/postgres/postgresql.conf  
+  #     - ./db/pg_hba.conf:/etc/config/pg_hba.conf
+  #     - ./db/postgresql.conf:/etc/config/postgresql.conf   
+  #   ports:
+  #     - "5436:5432"
+  #   networks:
+  #     tdm_net:
+  #       ipv4_address: 172.26.0.7
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"

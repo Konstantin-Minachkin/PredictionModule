@@ -1,0 +1,159 @@
+
+dbConnectionString:
+  host: localhost
+  port: 5432
+  dbname: prediction_service
+  user: service_user
+  passw: 0987
+
+
+rabbitConnectionString:
+    host: localhost
+    port: 5672
+    vhost: prediction_service
+    user: admin
+    passw: qweqwe
+
+
+
+port_group:
+# для наименования группы нельзя использовать 'any_tcp' 'any_udp' 'any' имена. Они зарезервированы под любой трафик определенного типа (tcp\udp\любой)
+  name1:
+    tcp: [80, 443]
+  name2:
+    tcp: [8080, 9090, 5642]
+  name3:
+    udp: [90, 80]
+
+
+subnet_group:
+# имя 'any' зарезервирована для сети 0.0.0.0/0
+  # group1:
+  #   filter_sting: any
+  group2:
+    filter_sting: 172.16.24.0/24
+  group3:
+    filter_sting: 172.16.40.0/24
+  group4:
+    filter_sting: 172.16.28.0/24
+  group5:
+    filter_sting: 172.16.32.0/24
+  group6:
+    filter_sting: 172.16.16.0/24
+  group7:
+    filter_sting: 172.16.0.0/24
+  # group2:
+  #   filter_sting: 172.16.*.0/24
+  # group3:
+  #   filter_sting: 172.16.?.12/30
+  # group4:
+  #   filter_sting: 172.16.?0.0/24
+  group11:
+    filter_sting: 172.16.24.12
+
+
+package_type:
+  -
+    # ip_src: group1      #регулирует, какие пакеты должны попасть в обучающий датасет + для какие ip_src нужно включать в запрос (на строительства путей заранее) на контроллер 
+    ip_dst: group2
+    port_group_id: name1  #просто регулирует, какие пакеты должны попасть в обучающий датасет. По умoлчанию - если не указан - будет any
+    is_monitored: true    #регулирует нужно ли прогнозировать для ip_dst из этого типа пакета, или он пока исключен из выборки
+    use_model: GRU_model_1
+  -
+    # ip_src: group1
+    ip_dst: group3
+    port_group_id: name1
+    is_monitored: true
+  -
+    # ip_src: group1
+    ip_dst: group4
+    port_group_id: name1
+    is_monitored: true
+  -
+    # ip_src: group1
+    ip_dst: group5
+    port_group_id: name1
+    is_monitored: true
+  -
+    # ip_src: group1
+    ip_dst: group6
+    port_group_id: name1
+    is_monitored: true
+  -
+    ip_dst: group7
+    port_group_id: name1
+    is_monitored: true
+  # -
+  #   ip_dst: group2
+  #   port_group_id: any-tcp 
+  #   is_monitored: true
+  # -
+  #   ip_src: group1  #регулирует, какие пакеты должны попасть в обучающий датасет + для какие ip_src нужно включать в запрос (на строительства путей заранее) на контроллер 
+  #   ip_dst: group4
+  #   port_group_id: name2
+  #   is_monitored: true #регулирует нужно ли прогнозировать для ip_dst из этого типа пакета, или он пока исключен из выборки
+  # -
+  #   ip_src: group1
+  #   ip_dst: group3
+  #   port_group_id: name1
+  #   is_monitored: false
+  # -
+  #   ip_src: group10
+  #   ip_dst: group11
+  #   port_group_id: name1
+  #   is_monitored: true
+
+
+models:
+# модели, которые можно использовать для прогнозирования
+  GRU_model_1:
+    model_type: GRU_model
+    loss_f: Huber
+    seq_length: 10
+    epochs: 40
+    repeat: 2
+    batch_size: 60
+    neurons_ammount: 55
+    dropout_percent: 0.25
+    #min_dataset_size: 1000
+  # GRU_model_3:
+  #   model_type: GRU_model
+  #   loss_f: Huber
+  #   seq_length: 10
+  #   epochs: 1
+  #   repeat: 10
+  #   batch_size: 10
+  #   neurons_ammount: 100
+  #   dropout_percent: 0.25
+  #   # min_dataset_size: 100
+  #   max_dataset_size: 1000
+  #   # prediction_size: 10
+  #   # validation_data_ammount: 10
+  #   # min_accuracy: 50
+
+
+general_settings:
+  default_model: GRU_model_1
+  default_scaler: StandardScaler
+  prediction-size: 20 # сколько пакетов надо прогнозировать
+  #запрос на контроллер отправляется за time_make_way+delay сек заранее
+  #также time_make_way+delay=кол-во секунд на которое результат может быть меньше нужного, чтобы считаться верным
+
+  time_make_way: 15 #180 #сколько секунд контроллер может строить путь для пакета в сети
+  delay: 5 #480 #на сколько сек заранее надо строить путь
+
+  min_dataset_size: 800 #300 #миинимальное число пакетов, которое должно относится к packagePredictor, чтобы начать предсказывать
+  max_dataset_size: 5000 #максимальное кол-во записей для датасета обучения по умолчанию
+  
+  series_reprediction_num: 0 #4 # сколько пакетов должно остаться в бд, прежде чем нужно будет спрогнозировать еще одну серию размером prediction-size
+
+  #в каких директориях хранить файлы
+  scaler_files_dir: /home/control/scalers/
+  model_files_dir: /home/control/models/
+
+  min_accuracy: 50 #в процентах, при которой считается допустимым использовать модель
+  accuracy_deviation: 10 #в процентах, какое отклонение по точности модели считать допустимым, чтобы ее не переобучать
+  validation_data_ammount: 10 #в процентах - какое кол-во данных из датасета использовать для установки точности модели после первоначального обучения
+
+  count_series_delay: 0 #сколько серий предсказаний должно пройти, прежде чем запустить расчет точности для серии. Пример параметр=1 => для серии №4 расчет точности будет запущен, когда будем логировать пакет из серии №6 или выше
+  size_deviation: 30 #в процентах - на сколько процентов больше записей пакетов должно быть, чтобы можно было еще раз отправить запрос на обучить\дообучить\предсказать

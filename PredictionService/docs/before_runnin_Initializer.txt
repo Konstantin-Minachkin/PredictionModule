@@ -1,0 +1,18 @@
+sudo -u postgres psql
+create user service_user with password '0987';
+create database prediction_service;
+grant all privileges on database prediction_service to service_user;
+\l
+\c database_name
+\dt
+
+
+# start rabbit
+# cd ~/Documents/PredictionService/Initializer
+# sudo docker compose -f rabbit.yml up -d
+
+
+если надо сбросить базу в ноль
+sudo -u postgres psql
+drop database prediction_service;
+create database prediction_service; grant all privileges on database prediction_service to service_user;

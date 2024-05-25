@@ -1,0 +1,10 @@
+
+задаем данные в .proto файле
+cd PredictionService
+protoc -I=Datatypes --python_out=Datatypes Datatypes/Package.proto
+
+import Package_pb2
+
+
+
+protoc -I=Datatypes --python_out=Datatypes Datatypes/countMsg.proto 

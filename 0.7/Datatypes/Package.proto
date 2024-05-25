@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+enum portType {
+    tcp = 0;
+    udp = 1;
+    none = 2;
+}
+
+message Package {
+    string ip_src = 1;
+    string ip_dst = 2;
+    int32 port = 3;
+    portType port_type = 4;
+    string timestap = 5;
+
+    int32 log_flag = 6;
+    int64 log_flag_series_num = 7;
+}

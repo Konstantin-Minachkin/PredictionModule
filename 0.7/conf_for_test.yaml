@@ -1,0 +1,187 @@
+
+#область глобальных настроек
+vlans:
+    office:
+         #office network
+        vid: 100
+        net:
+            - '192.168.2.0/24'
+            - '192.168.3.0/24'
+            - '192.168.5.0/24'
+    guest:
+        vid: 200
+        net:
+            - '192.168.4.0/24'
+            - '192.168.6.0/24'
+    vl3:
+        vid: 300
+        acl_in: [guest-protect]
+        acl_out: [office-protect]
+    vl4:
+        vid: 400
+
+        
+vlan-routing:
+    router-office-guest: [office, guest]
+    all_vlans: [vl3, vl4, office]
+
+
+acl:
+    guest-protect:
+        #prevent ipv4 communication betwen Office/Guest networks
+        - rule:
+            # priority: 110
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.4.0/24
+            actions:
+                allow: False
+        - rule:
+            match:
+                vlan_vid: 300
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+    office-protect:
+        - rule:
+            actions:
+                allow: True
+
+
+#настройки свитчей
+dps:
+    sw1:
+        # switch default
+        dp_id: 1
+        native_vlan: office
+        border_ospf: 5  #порт 6 указываем в конфиге, но ничего к нему не присоединяем. Также этот порт должен быть самый первый не используемый, чтобы ovs в mininet взял именно его. Поэтому лчуше указывать border ospf = 1 порту
+        ip_gateways:
+                announce:
+                    #шлюзы по умолчанию
+                    #сети этих шлюзов будут объявляться в ospf
+                    - '192.168.2.1/24'
+                    - '192.168.3.1/24'
+                    - '192.168.4.1/24'
+                others:
+                    #сети, которые не будут объявляться в ospf
+                    # стыковочная сеть с vedge
+                    - '192.168.20.2/29'
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+                native_vlan: office
+            3:
+                acl_out: [ office-protect ]
+            4:
+            5:
+            6:
+                tagged_vlans: [office, guest]
+            7:
+                tagged_vlans: [office, guest]
+    sw2:
+        dp_id: 2
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+            3:
+            4:
+                native_vlan: guest
+            5:
+                tagged_vlans: [office, guest]
+            6:
+                tagged_vlans: [office, guest]
+    sw3:
+        dp_id: 3
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+                tagged_vlans: [office, guest]
+    sw4:
+        dp_id: 4
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+                # state: 2
+            2:
+                tagged_vlans: [office, guest]
+    
+    sw7:
+        # switch default
+        dp_id: 7
+        native_vlan: guest
+        border_ospf: 1
+        ip_gateways:
+                announce:
+                     - '192.168.5.1/24'
+                     - '192.168.6.1/24'
+                others:
+                    - '192.168.21.2/29' # стыковочная сеть с vedge
+        ports:
+            1: #для ospf
+            2:
+               tagged_vlans: [office, guest]
+            3:
+            4:
+    sw8:
+        dp_id: 8
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+            3:
+                native_vlan: guest
+
+
+    # чисто для теста stp
+    sw11:
+        dp_id: 11
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+            3:
+                tagged_vlans: [office, guest]
+            4:
+            5:
+                tagged_vlans: [office, guest]
+    sw21:
+        dp_id: 21
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+            3:
+                tagged_vlans: [office, guest]
+            4:
+            5:
+                tagged_vlans: [office, guest]
+    sw31:
+        dp_id: 31
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+            2:
+                tagged_vlans: [office, guest]
+    sw41:
+        dp_id: 41
+        native_vlan: office
+        ports:
+            1:
+                tagged_vlans: [office, guest]
+                # state: 2
+            2:
+                tagged_vlans: [office, guest]
+                # state: 2
+                

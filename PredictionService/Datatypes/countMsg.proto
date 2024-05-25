@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message countMsg {
+    string predictor_src = 1;
+    string predictor_dst = 2;
+    string predictor_port_group_id = 3;
+    string predictor_specific_ip_dst = 4;
+
+    int32 log_flag = 5;
+    int64 log_flag_series_num = 6;  
+}

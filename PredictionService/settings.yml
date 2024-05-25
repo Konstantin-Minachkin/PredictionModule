@@ -1,0 +1,17 @@
+
+dbConnectionString:
+  host: localhost
+  port: 5432
+  dbname: prediction_service
+  user: service_user
+  passw: 0987
+
+
+rabbitConnectionString:
+    host: localhost
+    port: 5672
+    vhost: prediction_service
+    user: admin
+    passw: qweqwe
+    heartbeat: 30
+

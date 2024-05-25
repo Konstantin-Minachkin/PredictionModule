@@ -1,0 +1,34 @@
+#область глобальных настроек
+vlans:
+    office:
+         #office network
+        vid: 100
+    guest:
+        vid: 200
+
+
+#настройки свитчей
+dps:
+    sw1:
+        # switch default
+        dp_id: 1
+        native_vlan: office
+        ports:
+            1:
+                native_vlan: guest
+            2:
+                tagged_vlans: [office, guest]
+            3:
+            4:
+                tagged_vlans: [office]
+            5:
+                native_vlan: guest
+    sw2:
+        dp_id: 2
+        native_vlan: office
+        ports:
+            1:
+            2:
+            3:
+            4:
+            5:

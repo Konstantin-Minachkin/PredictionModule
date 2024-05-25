@@ -1,0 +1,881 @@
+
+vlans:
+    users-office:
+        vid: 81
+        net:
+            - '172.16.128.0/26'
+            - '172.16.128.128/26'
+            - '172.16.129.0/26'
+            - '172.16.129.128/26'
+            - '172.16.130.0/24'
+        acl_in: [users_protect]
+    users-phones:
+        vid: 85
+        net:
+            - '172.16.128.64/26'
+            - '172.16.128.192/26'
+            - '172.16.129.64/26'
+            - '172.16.129.192/26'
+            - '172.16.131.0/24'
+        acl_in: [users_protect]
+    sec-devices:
+        vid: 45
+        net:
+            - '172.16.28.0/27'
+            - '172.16.28.32/27'
+            - '172.16.28.64/27'
+            - '172.16.28.96/27'
+            - '172.16.28.128/26'
+    paym-atm:
+        vid: 15
+        net:
+            - '172.16.26.0/28'
+            - '172.16.26.16/28'
+            - '172.16.26.32/28' 
+            - '172.16.26.64/28'
+            - '172.16.26.96/28'
+        acl_in: [payments_protect] 
+    payments:
+        vid: 10
+        net:
+            - '172.16.24.0/24'
+        # acl_in: [payments_protect] 
+    prod:
+        vid: 20
+        net:
+            - '172.16.0.0/24'
+        # acl_in: [prod_protect] 
+    test:
+        vid: 30
+        net:
+            - '172.16.16.0/24'
+        # acl_in: [test_protect] 
+    security:
+        vid: 40
+        net:
+            - '172.16.28.0/24'
+        # acl_in: [security_protect] 
+    partners:
+        vid: 50
+        net:
+            - '172.16.40.0/24'
+        # acl_in: [partners_protect]
+    partners-users:
+        vid: 52
+        net:
+            - '172.16.41.0/24'
+    inet:
+        vid: 60
+        net:
+            - '172.16.32.0/24'
+        # acl_in: [inet_protect]
+    global:
+        vid: 80
+        net:
+            - '172.16.192.0/19'
+    management:
+        vid: 90
+        net:
+            - '192.168.0.0/22'
+        acl_in: [management_protect]
+
+vlan-routing:
+    inter_seg: [partners, inet, security, test, prod, payments, global, users-office, sec-devices]
+    inter_partners: [partners, partners-users]
+    admin_managment: [users-office, management]
+    inter_users: [payments, paym-atm]
+
+acl:
+    # firewall rules
+    #prevent ipv4 communication betwen different segments
+    # different acls for different segments
+    inet_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.32.0/21
+                ipv4_dst: 172.16.32.0/21
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.32.0/21
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+    
+    users_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.128.0/19
+                ipv4_dst: 172.16.128.0/19
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.128.0/19
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+    
+    management_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 192.168.0.0/22
+                ipv4_dst: 192.168.0.0/22
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 192.168.0.0/22
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+
+    partners_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.40.0/24
+                ipv4_dst: 172.16.41.0/24
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.41.0/24
+                ipv4_dst: 172.16.40.0/24
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.40.0/24
+                ipv4_dst: 172.16.40.0/24
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.24.0/22
+                ipv4_dst: 172.16.40.0/24
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.40.0/24
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+    
+    payments_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.24.0/22
+                ipv4_dst: 172.16.24.0/22
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.40.0/24
+                ipv4_dst: 172.16.24.0/22
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.24.0/22
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+
+    prod_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.28.15
+                ipv4_dst: 172.16.0.15
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.0.0/21
+                ipv4_dst: 172.16.0.0/21
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.0.0/21
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+
+    test_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.16.0/21
+                ipv4_dst: 172.16.16.0/21
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.16.0/21
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+
+    security_protect:
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_src: 172.16.28.0/22
+                ipv4_dst: 172.16.28.0/22
+            actions:
+                allow: True
+        - rule:
+            match:
+                dl_type: 0x800
+                ipv4_dst: 172.16.28.0/22
+            actions:
+                allow: False
+        - rule:
+            actions:
+                allow: True
+
+
+#настройки свитчей
+dps:
+    br1-office-sw1:
+        # switch default
+        dp_id: 31
+        native_vlan: users-office
+        border_ospf: 1  #порт 6 указываем в конфиге, но ничего к нему не присоединяем. Также этот порт должен быть самый первый не используемый, чтобы ovs в mininet взял именно его. Поэтому лчуше указывать border ospf = 1 порту
+        ip_gateways:
+                announce:
+                    #шлюзы по умолчанию
+                    #сети этих шлюзов будут объявляться в ospf
+                    - '172.16.128.65/26'
+                    - '172.16.128.1/26'
+                    - '172.16.28.1/27'
+                    - '172.16.26.1/28'
+                others:
+                    #сети, которые не будут объявляться в ospf
+                    # стыковочная сеть с vedge
+                    - '172.16.192.2/29'
+        ports:
+            1:
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            3:
+                native_vlan: sec-devices
+            4:
+                native_vlan: sec-devices  
+            5:
+            6:
+                native_vlan: users-phones
+            7:
+                native_vlan: users-phones
+    br1-office-sw2:
+        dp_id: 32
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                native_vlan: paym-atm
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+    
+    do1-sw1:
+        # switch default
+        dp_id: 41
+        native_vlan: users-office
+        border_ospf: 1
+        ip_gateways:
+                announce:
+                    - '172.16.128.129/26'
+                    - '172.16.128.193/26'
+                    - '172.16.28.33/27'
+                    - '172.16.26.17/28'
+                others:
+                    - '172.16.192.10/29'
+        ports:
+            1:
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            3:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm] 
+    do1-swF1:
+        dp_id: 42
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                native_vlan: sec-devices
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+    do1-swF2-1:
+        dp_id: 43
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            3:
+                native_vlan: sec-devices
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+    do1-swF2-2:
+        dp_id: 44
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                native_vlan: paym-atm
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+
+    br2-office-sw1:
+        dp_id: 51
+        native_vlan: users-office
+        border_ospf: 1
+        ip_gateways:
+                announce:
+                    - '172.16.129.1/26'
+                    - '172.16.129.65/26'
+                    - '172.16.28.65/27'
+                    - '172.16.26.33/28'
+                others:
+                    - '172.16.192.18/29'
+        ports:
+            1:
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            3:
+                native_vlan: sec-devices
+            4:
+                native_vlan: sec-devices  
+            5:
+            6:
+                native_vlan: users-phones
+            7:
+                native_vlan: users-phones
+    br2-office-sw2:
+        dp_id: 52
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                native_vlan: paym-atm
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+
+    do2-sw1:
+        dp_id: 61
+        native_vlan: users-office
+        border_ospf: 1
+        ip_gateways:
+                announce:
+                    - '172.16.129.129/26'
+                    - '172.16.129.193/26'
+                    - '172.16.28.97/27'
+                    - '172.16.26.65/28'
+                others:
+                    - '172.16.192.26/29'
+        ports:
+            1:
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            3:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+    do2-swF1:
+        dp_id: 62
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                native_vlan: sec-devices
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+    do2-swF2-1:
+        dp_id: 63
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            3:
+                native_vlan: sec-devices
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+    do2-swF2-2:
+        dp_id: 64
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm]
+            2:
+                native_vlan: paym-atm
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+
+    
+    hq-sw1:
+        dp_id: 71
+        native_vlan: users-office
+        border_ospf: 1
+        ip_gateways:
+            announce:
+                - '172.16.130.1/24'
+                - '172.16.131.1/24'
+                - '172.16.28.129/26'
+                - '172.16.26.97/28'
+                - '172.16.41.1/24'
+            others:
+                - '172.16.192.34/29'
+        ports:
+            1:
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            3:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+    hq-sw1-f1:
+        dp_id: 72
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            3:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+            12:
+                native_vlan: partners-users
+            13:
+                native_vlan: users-phones
+    hq-sw1-f2:
+        dp_id: 73
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            3:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+            12:
+                native_vlan: partners-users
+            13:
+                native_vlan: users-phones
+    do1-sw2-f1:
+        dp_id: 74
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            2:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            3:
+                native_vlan: sec-devices
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+            12:
+                native_vlan: partners-users
+            13:
+                native_vlan: users-phones
+    do1-sw3-f1:
+        dp_id: 75
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            2:
+                native_vlan: sec-devices
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+            12:
+                native_vlan: partners-users
+            13:
+                native_vlan: users-phones
+    do1-sw2-f2:
+        dp_id: 76
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            2:
+                native_vlan: sec-devices
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+            12:
+                native_vlan: partners-users
+            13:
+                native_vlan: users-phones
+    do1-sw3-f2:
+        dp_id: 77
+        native_vlan: users-office
+        ports:
+            1:
+                tagged_vlans: [users-office, users-phones, sec-devices, paym-atm, partners-users]
+            2:
+                native_vlan: sec-devices
+            3:
+                native_vlan: paym-atm
+            4:
+            5:
+                native_vlan: users-phones
+            6:
+            7:
+                native_vlan: users-phones
+            8:
+            9:
+                native_vlan: users-phones
+            10:
+            11:
+                native_vlan: users-phones
+            12:
+                native_vlan: partners-users
+            13:
+                native_vlan: users-phones
+
+    
+    dc-sw1:
+        dp_id: 11
+        native_vlan: global
+        border_ospf: 1
+        ip_gateways:
+            announce:
+                - '172.16.24.1/24'
+                - '172.16.0.1/24'
+                - '172.16.16.1/24'
+                - '172.16.28.1/24'
+                - '172.16.40.1/24'
+                - '172.16.32.1/24'
+            others:
+                - '172.16.192.42/29'
+        ports:
+            1:
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+    dc-core-sw1:
+        dp_id: 12
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            4:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            5:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            6:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            7:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+    dc-core-sw2:
+        dp_id: 13
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            4:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            5:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            6:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            7:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+    dc-leaf-sw1:
+        dp_id: 14
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3: 
+                native_vlan: payments
+            4: 
+                native_vlan: payments
+            5: 
+                native_vlan: payments
+            6: 
+                native_vlan: payments
+            7: 
+                native_vlan: payments
+    dc-leaf-sw2:
+        dp_id: 15
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3: 
+                native_vlan: prod
+            4: 
+                native_vlan: prod
+            5: 
+                native_vlan: prod
+            6: 
+                native_vlan: prod
+            7: 
+                native_vlan: prod
+    dc-leaf-sw3:
+        dp_id: 16
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3: 
+                native_vlan: test
+            4: 
+                native_vlan: test
+            5: 
+                native_vlan: test
+            6: 
+                native_vlan: test
+            7: 
+                native_vlan: test
+    dc-leaf-sw4:
+        dp_id: 17
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3: 
+                native_vlan: security
+            4: 
+                native_vlan: security
+            5: 
+                native_vlan: security
+            6: 
+                native_vlan: security
+            7: 
+                native_vlan: security
+    dc-leaf-sw5:
+        dp_id: 18
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3: 
+                native_vlan: partners
+            4: 
+                native_vlan: partners
+            5: 
+                native_vlan: partners
+            6: 
+                native_vlan: partners
+            7: 
+                native_vlan: partners
+    dc-leaf-sw6:
+        dp_id: 19
+        native_vlan: global
+        ports:
+            1:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            2:
+                tagged_vlans: [payments, prod, test, security, partners, inet, users-office, users-phones, partners-users, global]
+            3: 
+                native_vlan: inet
+            4: 
+                native_vlan: inet
+            5: 
+                native_vlan: inet
+            6: 
+                native_vlan: inet
+            7: 
+                native_vlan: inet

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+
+message PredictedPackage {
+    string ip_src = 1;
+    string ip_dst = 2;
+    int32 log_flag = 3;
+    int64 log_flag_series_num = 4;
+    int32 lifetime = 5;
+}

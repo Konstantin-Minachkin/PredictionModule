@@ -1,0 +1,20 @@
+нужно найти ofctl_rest.py
+    /home/control/.pyenv/versions/3.9.19/lib/python3.9/site-packages/ryu/app/ofctl_rest.py
+    делаем для простоты гиперссылку
+    ln -s /home/control/.pyenv/versions/3.9.19/lib/python3.9/site-packages/ryu ./ryu
+
+#запуск контроллера
+ryu-manager --observe-links main.py background.py vlanApp.py switch.py l3App.py ryu/app/ofctl_rest.py ospfApp.py StpApp.py aclApp.py ConnectorToApp.py ConnectorFromApp.py
+
+#запуск mininet локальной сети
+sudo python3 test_data_mn.py
+    #очистка mininet
+    sudo mn -c
+
+#инициализация бд, применение настроек
+python3 Initializer
+
+#запуск сервиса предсказаний
+python3 WriterModule
+python3 MonitorModule
+python3 PredictionModule

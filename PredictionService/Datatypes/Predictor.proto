@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+
+message Predictor {
+    string src = 1;
+    string dst = 2;
+    string port_group_id = 3;
+    string specific_ip_dst = 4;
+}
